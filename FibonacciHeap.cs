@@ -1,197 +1,244 @@
 ﻿namespace B405_Project;
 
-public class FibHeap {
-    private sealed class Node {
-        public int Key;
-        public int Degree;
-        public bool Mark;
-
-        public Node? Parent;
-        public Node? Child;
-        public Node Left;
-        public Node Right;
-
-        public Node(int key) {
-            Key = key;
-            Left = this;
-            Right = this;
-        }
+class Node {
+    public int key;
+    public Node parent;
+    public Node child;
+    public Node left;
+    public Node right;
+    public int degree;
+    public bool mark;
+    
+    public Node(int k) {
+        key = k;
+        parent = null;
+        child = null;
+        left = this;
+        right = this;
+        degree = 0;
+        mark = false;
     }
+}
 
-    private Node? min;
-    private int count;
+class FibHeap {
+    public Node min;
+    public int n;
 
-    public int Count => count;
+    public FibHeap() {
+        min = null;
+        n = 0;
+    }
+    
+    public void Push(int key) {
+        Node x = new Node(key);
 
-    public void Push(int value) {
-        var node = new Node(value);
         if (min == null)
-            min = node;
+            min = x;
         else {
-            InsertIntoRootList(node);
-            if (node.Key < min.Key)
-                min = node;
+            x.left = min;
+            x.right = min.right;
+            min.right.left = x;
+            min.right = x;
+
+            if (x.key < min.key) 
+                min = x;
         }
-        count++;
+
+        n++;
     }
-
-    public int Peek() {
-        if (min == null)
-            throw new InvalidOperationException("Heap is empty.");
-
-        return min.Key;
+    
+    void RemoveFromList(Node x) {
+        x.left.right = x.right;
+        x.right.left = x.left;
     }
-
-    public int Pop() {
-        if (min == null)
-            throw new InvalidOperationException("Heap is empty.");
+    
+    public Node Pop() {
+        if (min == null) return null;
 
         Node z = min;
-        bool onlyRoot = z.Right == z;
-        Node? nextRoot = onlyRoot ? null : z.Right;
+        Node child = z.child;
 
-        Node? firstChild = null;
-
-        if (z.Child != null) {
-            firstChild = z.Child;
-            Node start = z.Child;
-            Node x = start;
+        if (child != null) {
+            Node start = child;
+            Node x = child;
 
             do {
-                Node next = x.Right;
+                Node next = x.right;
+                
+                x.left.right = x.right;
+                x.right.left = x.left;
+                
+                x.left = min;
+                x.right = min.right;
+                min.right.left = x;
+                min.right = x;
 
-                x.Parent = null;
-                x.Mark = false;
-                x.Left = x;
-                x.Right = x;
-
-                InsertIntoRootList(x);
+                x.parent = null;
 
                 x = next;
             } while (x != start);
 
-            z.Child = null;
+            z.child = null;
+        }
+
+        RemoveFromList(z);
+        if (z == z.right) 
+            min = null;
+        else {
+            min = z.right;
+
+            Node x = min;
+            Node start = min;
+
+            do {
+                if (x.key < min.key) 
+                    min = x;
+                x = x.right;
+            } while (x != start);
         }
         
-        RemoveFromList(z);
-        count--;
+        n--;
+        Consolidate();
+        return z;
+    }
+    
+    void Link(Node y, Node x) {
+        y.left.right = y.right;
+        y.right.left = y.left;
+        
+        y.left = y;
+        y.right = y;
+        
+        y.parent = x;
 
-        if (count == 0) {
-            min = null;
-            return z.Key;
-        }
-
-        if (onlyRoot) 
-            min = firstChild ?? throw new InvalidOperationException("Heap structure became invalid.");
+        if (x.child == null)
+            x.child = y;
         else {
-            min = nextRoot!;
-            Consolidate();
+            y.left = x.child;
+            y.right = x.child.right;
+            x.child.right.left = y;
+            x.child.right = y;
         }
 
-        return z.Key;
+        x.degree++;
+        y.mark = false;
     }
+    
+    void Consolidate() {
+        if (min == null || n <= 1) return;
 
-    private void InsertIntoRootList(Node node) {
-        node.Parent = null;
-        node.Mark = false;
+        int maxDegree = (int)(Math.Log(n, 2) * 2) + 2;
+        Node[] degreeTable = new Node[maxDegree];
+    
+        List<Node> rootList = new List<Node>();
 
-        if (min == null) {
-            node.Left = node;
-            node.Right = node;
-            min = node;
-            return;
-        }
+        Node x = min;
+        if (x != null) {
+            Node start = x;
 
-        node.Left = min;
-        node.Right = min.Right;
-        min.Right.Left = node;
-        min.Right = node;
-    }
-
-    private static void RemoveFromList(Node node) {
-        if (node.Right == node)
-            return;
-
-        node.Left.Right = node.Right;
-        node.Right.Left = node.Left;
-    }
-
-    private void Consolidate() {
-        var roots = new List<Node>();
-        Node start = min!;
-        Node w = start;
-
-        do {
-            roots.Add(w);
-            w = w.Right;
-        } while (w != start);
-
-        Node?[] a = new Node?[64];
-
-        foreach (Node x0 in roots) {
-            Node x = x0;
-            int d = x.Degree;
-
-            while (true) {
-                if (d >= a.Length)
-                    Array.Resize(ref a, a.Length * 2);
-
-                if (a[d] == null)
-                    break;
-
-                Node y = a[d]!;
-                a[d] = null;
-
-                if (x.Key > y.Key)
-                    (x, y) = (y, x);
-
-                Link(y, x);
-                d++;
+            do {
+                rootList.Add(x);
+                x = x.right;
             }
-
-            a[d] = x;
+            while (x != start);
         }
 
         min = null;
 
-        for (int i = 0; i < a.Length; i++) {
-            Node? node = a[i];
-            if (node == null)
-                continue;
+        foreach (Node w in rootList) {
+            x = w;
+            int d = x.degree;
 
-            node.Left = node;
-            node.Right = node;
+            while (degreeTable[d] != null) {
+                Node y = degreeTable[d];
 
-            if (min == null)
-                min = node;
-            else {
-                InsertIntoRootList(node);
-                if (node.Key < min.Key)
+                if (x.key > y.key) {
+                    Node temp = x;
+                    x = y;
+                    y = temp;
+                }
+
+                Link(y, x);
+
+                degreeTable[d] = null;
+                d++;
+            }
+
+            degreeTable[d] = x;
+        }
+    
+        for (int i = 0; i < degreeTable.Length; i++) {
+            Node node = degreeTable[i];
+
+            if (node != null) {
+                if (min == null) {
+                    node.left = node;
+                    node.right = node;
                     min = node;
+                }
+                else {
+                    node.left = min;
+                    node.right = min.right;
+                    min.right.left = node;
+                    min.right = node;
+
+                    if (node.key < min.key) {
+                        min = node;
+                    }
+                }
             }
         }
     }
-
-    private void Link(Node y, Node x) {
-        RemoveFromList(y);
-
-        y.Parent = x;
-        y.Mark = false;
-
-        if (x.Child == null) {
-            x.Child = y;
-            y.Left = y;
-            y.Right = y;
-        }
+    
+    void Cut(Node x, Node y) {
+        // y is parent of x
+        
+        if (x.right == x)
+            y.child = null;
         else {
-            Node c = x.Child;
+            x.left.right = x.right;
+            x.right.left = x.left;
 
-            y.Left = c;
-            y.Right = c.Right;
-            c.Right.Left = y;
-            c.Right = y;
+            if (y.child == x)
+                y.child = x.right;
         }
 
-        x.Degree++;
+        y.degree--;
+
+        x.left = min;
+        x.right = min.right;
+        min.right.left = x;
+        min.right = x;
+
+        x.parent = null;
+        x.mark = false;
+    }
+    
+    void CascadingCut(Node x) {
+        Node y = x.parent;
+
+        if (y != null) {
+            if (x.mark == false)
+                x.mark = true;
+            else
+            {
+                Cut(x, y);
+                CascadingCut(y);
+            }
+        }
+    }
+    
+    public void DecreaseKey(Node x, int k) {
+        if (k > x.key) return;
+
+        x.key = k;
+        Node y = x.parent;
+        if (y != null && x.key < y.key) {
+            Cut(x, y);
+            CascadingCut(y);
+        }
+
+        if (min == null || x.key < min.key)
+            min = x;
     }
 }
