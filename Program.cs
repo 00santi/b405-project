@@ -3,25 +3,36 @@
 class Program {
     static void Main(string[] args) {
         var rand = new Random();
+        int no_runs = 3;
         
-        var arr = new int[1_000_000];
-        for (int i = 0; i < arr.Length; i++) 
-            arr[i] = rand.Next();
-        long bh1 = TestBinaryHeap(arr);
-        long fh1 = TestFibHeap(arr);
+        Console.WriteLine("\n\n~~~~~~~~~~~~~~~~~~~\nN = 1,000,000");
+        for (int run = 1; run <= no_runs; run++) {
+            var arr = new int[1_000_000];
+            
+            for (int i = 0; i < arr.Length; i++)
+                arr[i] = rand.Next();
+            
+            long bh1 = TestBinaryHeap(arr);
+            long fh1 = TestFibHeap(arr);
+            Console.WriteLine("Test #" + run);
+            Console.WriteLine("Binary Heap: " + bh1 + "ms");
+            Console.WriteLine("Fibonacci Heap: " + fh1 + "ms");
+        }
         
-        arr = new int[10_000_000];
-        for (int i = 0; i < arr.Length; i++)
-            arr[i] = rand.Next();
-        long bh2 = TestBinaryHeap(arr);
-        long fh2 = TestFibHeap(arr);
         
-        Console.WriteLine("N = 1,000,000");
-        Console.WriteLine("Binary Heap: " + bh1 + "ms");
-        Console.WriteLine("Fibonacci Heap: " + fh1 + "ms\n");
-        Console.WriteLine("N = 10,000,000");
-        Console.WriteLine("Binary Heap: " + bh2 + "ms");
-        Console.WriteLine("Fibonacci Heap: " + fh2 + "ms");
+        Console.WriteLine("\n\n~~~~~~~~~~~~~~~~~~~\nN = 10,000,000");
+        for (int run = 1; run <= no_runs; run++) {
+            var arr = new int[10_000_000];
+            
+            for (int i = 0; i < arr.Length; i++)
+                arr[i] = rand.Next();
+            
+            long bh1 = TestBinaryHeap(arr);
+            long fh1 = TestFibHeap(arr);
+            Console.WriteLine("Test #" + run);
+            Console.WriteLine("Binary Heap: " + bh1 + "ms");
+            Console.WriteLine("Fibonacci Heap: " + fh1 + "ms\n");
+        }
     }
 
     static long TestBinaryHeap(int[] arr) {
