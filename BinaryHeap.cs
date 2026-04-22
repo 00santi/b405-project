@@ -56,4 +56,8 @@ public class BinaryHeap {
             i = child;
         }
     }
+
+    public bool IsEmpty() {
+        return data.Count == 0;
+    }
 }

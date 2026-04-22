@@ -246,4 +246,8 @@ class FibHeap2 {
         if (min == null || x.dist < min.dist)
             min = x;
     }
+
+    public bool IsEmpty() {
+        return n == 0;
+    }
 }
