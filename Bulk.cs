@@ -17,7 +17,7 @@ class Bulk {
             
             long bh1 = BinTest(arr);
             long fh1 = FibTest(arr);
-            Console.WriteLine("\nTest #" + run);
+            if (NO_TEST_RUNS > 1) Console.WriteLine("\nTest #" + run);
             Console.WriteLine("Binary Heap: " + bh1 + "ms");
             Console.WriteLine("Fibonacci Heap: " + fh1 + "ms");
         }

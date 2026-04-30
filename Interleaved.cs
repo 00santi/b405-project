@@ -9,7 +9,7 @@ class Interleaved {
         
         Console.WriteLine("\n-----------------\nInterleaved Tests");
         Console.WriteLine("N = " + HEAP_SIZE);
-        Console.WriteLine(PUSH_PER_POP + " Pushes per pop");
+        Console.WriteLine(PUSH_PER_POP + " Inserts per Decrease-Key");
         for (int run = 1; run <= NO_TEST_RUNS; run++) {
             var arr = new int[HEAP_SIZE];
             
@@ -18,7 +18,7 @@ class Interleaved {
             
             long bh1 = BinTest(arr, PUSH_PER_POP);
             long fh1 = FibTest(arr, PUSH_PER_POP);
-            Console.WriteLine("\nTest #" + run);
+            if (NO_TEST_RUNS > 1) Console.WriteLine("\nTest #" + run);
             Console.WriteLine("Binary Heap: " + bh1 + "ms");
             Console.WriteLine("Fibonacci Heap: " + fh1 + "ms");
         }
